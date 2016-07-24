@@ -1,0 +1,628 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,安卓逆向," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="之前做了一段时间的安卓手游破解正版验证工作，总结一些基本的方法和知识，便于分享交流。破解的目的是让国内一些“被阉割”过(无GooglePlay框架)的安卓手机也能畅快地玩儿上GooglePlay上的游戏，所以文章主要讨论海外游戏市场下载的apk包如何去除正版验证。国内的手游大部分还是做了防破解工作的，加壳、防反编译等等（此篇不予讨论）。大概海外市场的氛围较好，所以GooglePlay、Amazon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android手游apk破解及GooglePlay正版去验证">
+<meta property="og:url" content="http://rockerlee.github.io./2016/07/24/android-gp-decompile-1/index.html">
+<meta property="og:site_name" content="Rocker's blog">
+<meta property="og:description" content="之前做了一段时间的安卓手游破解正版验证工作，总结一些基本的方法和知识，便于分享交流。破解的目的是让国内一些“被阉割”过(无GooglePlay框架)的安卓手机也能畅快地玩儿上GooglePlay上的游戏，所以文章主要讨论海外游戏市场下载的apk包如何去除正版验证。国内的手游大部分还是做了防破解工作的，加壳、防反编译等等（此篇不予讨论）。大概海外市场的氛围较好，所以GooglePlay、Amazon">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2468036-4104f3ea1c661865.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2468036-069dea2f14cfa973.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2016-07-24T08:31:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android手游apk破解及GooglePlay正版去验证">
+<meta name="twitter:description" content="之前做了一段时间的安卓手游破解正版验证工作，总结一些基本的方法和知识，便于分享交流。破解的目的是让国内一些“被阉割”过(无GooglePlay框架)的安卓手机也能畅快地玩儿上GooglePlay上的游戏，所以文章主要讨论海外游戏市场下载的apk包如何去除正版验证。国内的手游大部分还是做了防破解工作的，加壳、防反编译等等（此篇不予讨论）。大概海外市场的氛围较好，所以GooglePlay、Amazon">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/2468036-4104f3ea1c661865.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://rockerlee.github.io./2016/07/24/android-gp-decompile-1/"/>
+
+  <title> Android手游apk破解及GooglePlay正版去验证 | Rocker's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Rocker's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android手游apk破解及GooglePlay正版去验证
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-24T13:42:44+08:00" content="2016-07-24">
+              2016-07-24
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/24/android-gp-decompile-1/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/24/android-gp-decompile-1/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>之前做了一段时间的安卓手游破解正版验证工作，总结一些基本的方法和知识，便于分享交流。破解的目的是让国内一些“被阉割”过(无GooglePlay框架)的安卓手机也能畅快地玩儿上GooglePlay上的游戏，所以文章主要讨论海外游戏市场下载的apk包如何去除正版验证。国内的手游大部分还是做了防破解工作的，加壳、防反编译等等（此篇不予讨论）。大概海外市场的氛围较好，所以GooglePlay、Amazon商店的游戏基本都可以反编译成功，顶多加了代码混淆、调用了GP/Amazon的验证SDK而已。<br><a id="more"></a></p>
+<h1 id="适合谁看？"><a href="#适合谁看？" class="headerlink" title="适合谁看？"></a>适合谁看？</h1><p>破解初学者、懂一些编程知识的童鞋（完全不懂编程也可以，只能破解那些只需要替换一些文件/文本的游戏）、以及对apk破解/安全性维护感兴趣的童鞋。</p>
+<h1 id="什么是Smali？"><a href="#什么是Smali？" class="headerlink" title="什么是Smali？"></a>什么是Smali？</h1><p>先说Dalvik是google专门为Android操作系统设计的一个虚拟机，经过深度的优化。虽然Android上的程序是使用java来开发的，但是Dalvik和标准的java虚拟机JVM还是两回事。Dalvik VM是基于寄存器的，而JVM是基于栈的；Dalvik有专属的文件执行格式dex（dalvik executable），而JVM则执行的是java字节码。Dalvik VM比JVM速度更快，占用空间更少。</p>
+<p>通过Dalvik的字节码我们不能直接看到原来的逻辑代码，这时需要借助如Apktool或dex2jar+jd-gui工具来帮助查看。但是，注意的是最终我们修改APK需要操作的文件是.smali文件，而不是导出来的Java文件重新编译（况且这基本上不可能）。</p>
+<p>详细的Smali语法学习可以参考这篇文章：<a href="http://blog.csdn.net/lpohvbe/article/details/7981386" target="_blank" rel="external">http://blog.csdn.net/lpohvbe/article/details/7981386</a>，里面详细介绍了Smali中的数据类型、方法调用等等。<br>此外，反编译过程中遇到不懂的关键字，可参考<a href="http://pallergabor.uw.hu/androidblog/dalvik_opcodes.html" target="_blank" rel="external">http://pallergabor.uw.hu/androidblog/dalvik_opcodes.html</a>，非常实用的文档。</p>
+<h1 id="如何去除正版验证？"><a href="#如何去除正版验证？" class="headerlink" title="如何去除正版验证？"></a>如何去除正版验证？</h1><h3 id="你需要的工具"><a href="#你需要的工具" class="headerlink" title="你需要的工具"></a>你需要的工具</h3><p>工欲善其事，必先利其器，反编译工具很多，针对点也不同，本文主要用的是APKIDE（也叫APK改之理，一个类似APK studio的可视化反编译软件，内部已经集成了dex转smali、dex转jar、重新编译、签名、搜索等功能，推荐使用），其他工具和功能如下：</p>
+<p><strong>apktool</strong>，命令行工具，可以decode和build apk文件，主要用来解析xml等资源文件。<br><strong>dex2jar</strong>，一系列命令行工具，能将文件在dex、jar和smali之间相互转换，反编译时可以dex转为smali后修改smali代码，再将smali转回成dex。<br><strong>jd_guid</strong>，可视化工具，将jar文件反编译为java代码，便于阅读代码逻辑，至于直接编辑java代码什么的，你想多了。<br><strong>baksmali</strong>，命令行工具，也是用来转换dex和smali文件。<br><strong>apksigner</strong>，命令行签名工具，反编译重新打包之后用来重新签名apk。<br><strong>apk studio</strong>，类似APK IDE，英文界面，有时候会反编译失败而APK IDE不会，猜想可能是内嵌的baksmali之类的版本不一样或者编码问题吧。<br>以上工具在百度、谷歌上下载都可搜到下载。</p>
+<h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><p>通常不能运行的游戏表现有这几种：</p>
+<ol>
+<li>提示未安装谷歌框架，不能游戏；或者提示谷歌验证此游戏为盗版（可能你的apk不是从GooglePlay下载而来）。</li>
+<li>提示当前账号并未购买此游戏（同样，可能此游戏并非GooglePlay上购买后直接下载的）</li>
+</ol>
+<p>你打开游戏可能会卡在这样的页面：<br><img src="http://upload-images.jianshu.io/upload_images/2468036-4104f3ea1c661865.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>第一种情况是因为代码中调用了Google官方的验证SDK，仅验证游戏是否来自GooglePlay，而第二种添加了Google账号验证，检查你是否购买了此游戏，这两种情况都可以通过绕开Google验证来破解：</p>
+<h3 id="去除GooglePlay验证（可写成脚本进行自动化破解）"><a href="#去除GooglePlay验证（可写成脚本进行自动化破解）" class="headerlink" title="去除GooglePlay验证（可写成脚本进行自动化破解）"></a>去除GooglePlay验证（可写成脚本进行自动化破解）</h3><p>最简单的思路其实是找到代码中调用验证的地方，将其注释掉，直接调用callback函数（一般此类SDK都是异步返回，开发者实现一个带callback的Listener）中验证成功的方法，拷贝复制即可。至于调用的地方，一般都在入口Activity类中，函数名一般带有verify、certificate、auth之类的字样。这也的确是个可行的办法，但用这个办法破解了几款游戏后发现游戏之间差异很大，你必须针对每款游戏去找调用入口，太费时了，有没有规律性的、可自动化的方法呢？</p>
+<p>答案是肯定的，既然是SDK进行的验证，我们只修改SDK内的代码不就好了吗？只要验证的结果每次都返回成功就OK了。按Google文档上的教程，接入验证使用的是sdk\extras\google\play_licensing下的sdk工程，引入后就一个包：com.google.android.vending.licensing，用APK IDE打开如下：<br><img src="http://upload-images.jianshu.io/upload_images/2468036-069dea2f14cfa973.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>其内部大致做的事情就是验证apk签名，请求Google服务器检查验证是否通过、并得到游戏的扩展数据包信息（obb文件名、大小等），其中夹杂超时处理、缓存过期时间等等。</p>
+<p>找到了负责验证的sdk包，修改哪里就可以强制返回成功了呢？一个是LicenseValidator，负责解析Google服务器返回的responseCode，另一个是实现Policy接口的类，负责解析从服务器获取的额外信息（扩展包文件等）。这里偷了一点懒，没仔细研究SDK，而是找到个市面上比较好用的安卓破解器：幸运破解器（装在手机上就能直接破解游戏的神器，还能破解内购），用它破解一款游戏后导出apk，反编译出smali文件，写个脚本批量对比前后文件变化，过滤掉注释等无用信息得到的就是我们要修改的地方了！总结后如下：</p>
+<ol>
+<li><p>工程中所有调用java/security/Signature;-&gt;verify的地方，将下一行的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">move-result v3</div></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">const/4 v3, 0x1</div></pre></td></tr></table></figure>
+<p><code>move-result v3</code>的意思是将verify函数的返回结果赋值给v3，我们直接替换成声明一个值为true的v3变量即可。verify函数用以验证签名，我们在破解后必然要重新签名，无法保留原有开发者签名，所以所有验证签名的地方都需要进行这一步修改。</p>
+</li>
+<li><p>实现了Policy接口的类（一般是APKExpansionPolicy和ServerManagedPolicy）中的函数allowAccess，将函数开头的声明</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">const/4 v1, 0x0</div></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">const/4 v1, 0x1</div></pre></td></tr></table></figure>
+<p>（其中v1命名不确定，可能叫v0或v2等等）此函数根据上次请求结果和重试次数判断是否验证通过，v1是默认返回值，初始化时为false，后续代码判断满足某些条件后将v1赋值为true，函数退出时必然返回v1。所以我们将v1默认值设为true就相当于默认验证通过了。<br>注意，这里可能v1默认值已经是true了，而是在判断验证未通过时将v1赋值为false再返回，因此可以将此函数所有的变量声明都改为默认值为true。</p>
+</li>
+<li><p><code>smali\com\google\android\vending\licensing\LicenseValidator.smali</code>中的函数verify，将</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">0x1 -&gt; :sswitch_1</div><div class="line">0x2 -&gt; :sswitch_0</div></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">0x1 -&gt; :sswitch_0</div><div class="line">0x2 -&gt; :sswitch_1</div></pre></td></tr></table></figure>
+<p>这里是将switch中验证失败的情况指向了验证成功时要执行的代码段。</p>
+</li>
+<li><p>为了以防万一，可以在继承了<code>Lcom/google/android/vending/licensing/LicenseCheckerCallback</code>接口的类中修改dontAllow函数，在函数一开始加入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">const/16 v1, 0x100</div><div class="line">invoke-interface &#123;p0, v1&#125;,</div><div class="line">Lcom/google/android/vending/licensing/LicenseCheckerCallback;-&gt;allow(I)V</div><div class="line">return-void</div></pre></td></tr></table></figure>
+<p>这里的意思是直接调用listener的allow函数，p0是callback自己，变量v1声明的初始值为0x100，是代表成功的常量，调用p0的allow函数，参数为v1，然后直接返回，之后的代码就不会被执行了。这样就确保必然调用allow，万无一失。</p>
+</li>
+<li>完成以上的步骤就可以通过GooglePlay验证了，但打开游戏后会开始下载游戏扩展包（obb文件），强制忽略手机上已存在的obb文件。这是因为正常的sdk在验证的同时会返回此游戏最新的扩展包名、包大小等信息，方便用户下载、开发者更新等。因此为了可以顺畅游戏，还要在实现了<code>Lcom/google/android/vending/licensing/Policy</code>接口的类中修改<code>getExpansionFileName</code>等一系列函数，直接将游戏扩展包的信息写在代码中直接返回。<br>完成以上步骤即可顺利游戏了，因为这些步骤都是有迹可循、规律的，所以写个脚本就可以一键破解了（脚本正在编写中）。<br>至于为什么不用破解后的验证sdk直接覆盖替换其他游戏的sdk，是因为各自游戏开发时间不同，采用的sdk版本不同，直接覆盖可能会导致有些方法找不到，而以上的这些修改都是在sdk核心逻辑中，亲自验证了几个版本发现这些核心逻辑并没有改变。</li>
+</ol>
+<h3 id="可能遇到的特殊处理"><a href="#可能遇到的特殊处理" class="headerlink" title="可能遇到的特殊处理"></a>可能遇到的特殊处理</h3><p>有些游戏可能在进行完以上步骤会出现闪退、报错等情况，这可能是由于该游戏接入的第三方工具在捣乱。以“拔拔曼陀罗”为例，本人完成以上步骤后报错NullPointer，遂打开Eclipse查找Logcat（不得不说查Logcat是非常实用的办法，只要眼疾手复制出来即可），发现的错误如下：</p>
+<ol>
+<li>无<code>com.android.vending.CHECK_LICENSE</code>权限错误：游戏中有个corona的包，搜索后得知这是个打包插件，方便开发者集成Google、Amazon等sdk、方便build。在Google验证处调用<code>enforceCallingOrSelfPermission</code>时报错，但Manifest中已添加此权限，未找到原因，反正已经破解了验证，直接注释掉，运行通过。</li>
+<li>空指针报错：同样还是Corona的坑，在获取谷歌框架服务时未判断null，大概corona的开发者觉得全世界的安卓机都应该有谷歌框架吧，呵呵，注释后运行成功。<br>当然需要特殊处理的地方肯定会很多，并不是所有游戏都能自动化破解，但有了自动化脚本就已经节省不少工作量了。</li>
+</ol>
+<h3 id="那些难以跨越的坑"><a href="#那些难以跨越的坑" class="headerlink" title="那些难以跨越的坑"></a>那些难以跨越的坑</h3><ol>
+<li>代码混淆<br>混淆后的代码几乎找不到从哪个类下手、从哪个方法下手，因为放眼望去所有类名、方法名全部都是a、b、c。海外市场也有不少游戏和应用添加混淆，但这也仅仅是“几乎”而已，并不是完全没办法，具体如何破解下一篇再来阐述。</li>
+<li>加壳等防反编译措施<br>还有很多种办法可以防止apk被反编译，如字符串混淆让反编译后的String类型不可读、用花指令或动态加载等方式让反编译看不到源码甚至无法反编译源代码。所幸目前见到的海外市场游戏较少采取此种措施，无需对此进行破解。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/安卓逆向/" rel="tag">#安卓逆向</a>
+          
+        </div>
+      
+
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/07/24/android-gp-decompile-1/"
+           data-title="Android手游apk破解及GooglePlay正版去验证" data-url="http://rockerlee.github.io./2016/07/24/android-gp-decompile-1/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="RockerLee" />
+          <p class="site-author-name" itemprop="name">RockerLee</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#适合谁看？"><span class="nav-number">1.</span> <span class="nav-text">适合谁看？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是Smali？"><span class="nav-number">2.</span> <span class="nav-text">什么是Smali？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何去除正版验证？"><span class="nav-number">3.</span> <span class="nav-text">如何去除正版验证？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#你需要的工具"><span class="nav-number">3.0.1.</span> <span class="nav-text">你需要的工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用方法"><span class="nav-number">3.0.2.</span> <span class="nav-text">常用方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#去除GooglePlay验证（可写成脚本进行自动化破解）"><span class="nav-number">3.0.3.</span> <span class="nav-text">去除GooglePlay验证（可写成脚本进行自动化破解）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#可能遇到的特殊处理"><span class="nav-number">3.0.4.</span> <span class="nav-text">可能遇到的特殊处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#那些难以跨越的坑"><span class="nav-number">3.0.5.</span> <span class="nav-text">那些难以跨越的坑</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">RockerLee</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"rockerblog"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
