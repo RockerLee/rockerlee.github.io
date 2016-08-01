@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Android,安卓逆向," />
 
 
 
@@ -84,12 +84,23 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Rocker's Blog">
-<meta property="og:url" content="http://rockerlee.github.io./index.html">
+<meta name="description" content="在上一篇文章“手游apk破解及GooglePlay正版去验证经验分享 ”中，遗留了一个问题：添加了代码混淆的游戏如何处理？最近刚刚写完这部分脚本，在此总结一下：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何破解添加代码混淆的GooglePlay游戏正版验证">
+<meta property="og:url" content="http://rockerlee.github.io./2016/08/01/android-gp-decompile-2/index.html">
 <meta property="og:site_name" content="Rocker's Blog">
+<meta property="og:description" content="在上一篇文章“手游apk破解及GooglePlay正版去验证经验分享 ”中，遗留了一个问题：添加了代码混淆的游戏如何处理？最近刚刚写完这部分脚本，在此总结一下：">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-1.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-2.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-3.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-4.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-5.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-6.jpg">
+<meta property="og:updated_time" content="2016-08-01T15:05:01.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Rocker's Blog">
+<meta name="twitter:title" content="如何破解添加代码混淆的GooglePlay游戏正版验证">
+<meta name="twitter:description" content="在上一篇文章“手游apk破解及GooglePlay正版去验证经验分享 ”中，遗留了一个问题：添加了代码混淆的游戏如何处理？最近刚刚写完这部分脚本，在此总结一下：">
+<meta name="twitter:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-1.jpg">
 
 
 
@@ -110,9 +121,9 @@
 
 
 
-  <link rel="canonical" href="http://rockerlee.github.io./"/>
+  <link rel="canonical" href="http://rockerlee.github.io./2016/08/01/android-gp-decompile-2/"/>
 
-  <title> Rocker's Blog </title>
+  <title> 如何破解添加代码混淆的GooglePlay游戏正版验证 | Rocker's Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -133,9 +144,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +221,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,10 +243,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/08/01/android-gp-decompile-2/" itemprop="url">
-                  如何破解添加代码混淆的GooglePlay游戏正版验证
-                </a>
+                如何破解添加代码混淆的GooglePlay游戏正版验证
               
             
           </h1>
@@ -284,145 +290,76 @@
       
 
       
-        
-          <p>在上一篇文章“手游apk破解及GooglePlay正版去验证经验分享 ”中，遗留了一个问题：添加了代码混淆的游戏如何处理？最近刚刚写完这部分脚本，在此总结一下：<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/01/android-gp-decompile-2/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
+        <p>在上一篇文章“手游apk破解及GooglePlay正版去验证经验分享 ”中，遗留了一个问题：添加了代码混淆的游戏如何处理？最近刚刚写完这部分脚本，在此总结一下：<br><a id="more"></a><br>添加混淆的游戏，反编译后代码类名和方发名基本不可读，负责正版验证部分的SDK会变成如下的样子：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-1.jpg" alt="混淆后的类名"><br>但代码混淆并不能混淆字符串（这也是为什么要用加壳工具、字符串编码了），于是抱着希望耐着性子一个个点开终于找到唯一一个带有字符串（也是唯一能看懂）的方法：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-2.jpg" alt=""><br>居然是对验证成功与否的常量定义！可谓一线生机。由代码可以看出这个类p中定义了3个常量a, b, c分别代表<code>LICENSED</code>, <code>NOT_LICENSED</code>和<code>RETRY</code>。接下来的工作似乎变得简单了，只要找到引用了<code>LICENSED</code>的地方，那里应该有一些条件来判断验证结果为<code>LICENSED</code>还是<code>NOT_LICENSED</code>，修改条件逻辑，让其全部进入<code>LICENSED</code>的条件块中即可。<br>然而搜索一遍后发现2个地方引用了<code>LICENSED</code>：</p>
+<ol>
+<li><p>如下图，类似之前的推理逻辑，此函数判断变量v0是否与<code>Lcom/android/vending/licensing/p;-&gt;a</code>（即<code>LICENSED</code>）相同，从而返回true或false，只要强行修改返回值就行，很方便的办法：在<code>return v0</code>之前插入将v0设为true的语句<code>const/4 v0, 0x1</code>即可<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-3.jpg" alt=""></p>
+</li>
+<li><p>如下图所示，类<code>Lcom/android/vending/licensing/n</code>的函数a()仅仅返回了<code>LICENSED</code>这个引用：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-4.jpg" alt=""><br>还好这也只是让搜索变得稍复杂点，只需再找到对这个函数的引用，将相应的条件块进行修改即可。<strong><em>注意，搜索函数引用时记得查看是否为实现的接口函数。</em></strong>例如这里的函数a()就是对接口<code>Lcom/android/vending/licensing/a</code>的实现。因此需要同时搜索两个函数引用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Lcom/android/vending/licensing/n;-&gt;a()      //事实证明并不能搜到这条语句的引用</div></pre></td></tr></table></figure>
+<p>和</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Lcom/android/vending/licensing/a;-&gt;a()</div></pre></td></tr></table></figure>
+<p>搜索结果只有一条，在某个类中几百行的函数中引用了<code>Lcom/android/vending/licensing/a;-&gt;a()</code>：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-5.jpg" alt=""><br>代码中在cond_9的条件块中判断了p2是否为0，然后跳入不同条件块，只需将是否为0的判断注释掉：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#if-nez p2, :cond_a</div></pre></td></tr></table></figure>
+<p>再在函数开始时便直接跳入cond_9（如下图），于是这个函数必然会跳入验证结果为<code>LICENSED</code>的语句。<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-6.jpg" alt=""><br><strong><em>注意：这里的goto语句需要写在变量声明之后，否则后面的代码用到未经声明的变量会报错Verify Error。</em></strong></p>
+</li>
+</ol>
+<p>最后，打包、重签名、安装、运行，GP上付费购买的游戏也可以在其他手机上完美运行啦（包括无Google Play框架手机）！ : )<br>    此外，以上逻辑可以很方便的写成脚本，全部是文本查找与替换，无非是遍历次数略多，不过作为工具脚本，也不必花时间去优化其运行效率了。</p>
+
       
     </div>
 
     <div>
       
+        
+
+      
     </div>
 
     <div>
+      
+        
+
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/07/24/android-gp-decompile-1/" itemprop="url">
-                  Android手游apk破解及GooglePlay正版去验证
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-24T13:42:44+08:00" content="2016-07-24">
-              2016-07-24
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/Android/" rel="tag">#Android</a>
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/07/24/android-gp-decompile-1/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/24/android-gp-decompile-1/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
+            <a href="/tags/安卓逆向/" rel="tag">#安卓逆向</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <p>之前做了一段时间的安卓手游破解正版验证工作，总结一些基本的方法和知识，便于分享交流。破解的目的是让国内一些“被阉割”过(无GooglePlay框架)的安卓手机也能畅快地玩儿上GooglePlay上的游戏，所以文章主要讨论海外游戏市场下载的apk包如何去除正版验证。国内的手游大部分还是做了防破解工作的，加壳、防反编译等等（此篇不予讨论）。大概海外市场的氛围较好，所以GooglePlay、Amazon商店的游戏基本都可以反编译成功，顶多加了代码混淆、调用了GP/Amazon的验证SDK而已。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/07/24/android-gp-decompile-1/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/24/android-gp-decompile-1/" rel="next" title="Android手游apk破解及GooglePlay正版去验证">
+                <i class="fa fa-chevron-left"></i> Android手游apk破解及GooglePlay正版去验证
+              </a>
+            
           </div>
-        
-      
-    </div>
 
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -430,6 +367,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/01/android-gp-decompile-2/"
+           data-title="如何破解添加代码混淆的GooglePlay游戏正版验证" data-url="http://rockerlee.github.io./2016/08/01/android-gp-decompile-2/">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -449,8 +394,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -493,6 +447,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <p class="post-toc-empty">此文章未包含目录</p>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -589,6 +554,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
