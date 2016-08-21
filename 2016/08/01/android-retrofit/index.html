@@ -1,0 +1,619 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="我们在日常编写代码中免不了会用到各种各样第三方库，网络请求、图片加载、数据库等等。有些lib接入可能方便到几行代码搞定，有些lib可能从demo、文档到测试都是坑（比如lib嵌套lib导致资源冲突、lib中定义的类无法扩展、兼容性差导致大量崩溃等），相信接过第三方库的童鞋不会没有过这样的吐槽。笔者也是在最近修改一个第三方lib的bug过程中翻看了一些源码，发现其中存在点设计技巧，于是结合最近看的设">
+<meta property="og:type" content="article">
+<meta property="og:title" content="别人家SDK中的设计模式－－Android Retrofit库源码解读">
+<meta property="og:url" content="http://rockerlee.github.io./2016/08/01/android-retrofit/index.html">
+<meta property="og:site_name" content="Rocker's Blog">
+<meta property="og:description" content="我们在日常编写代码中免不了会用到各种各样第三方库，网络请求、图片加载、数据库等等。有些lib接入可能方便到几行代码搞定，有些lib可能从demo、文档到测试都是坑（比如lib嵌套lib导致资源冲突、lib中定义的类无法扩展、兼容性差导致大量崩溃等），相信接过第三方库的童鞋不会没有过这样的吐槽。笔者也是在最近修改一个第三方lib的bug过程中翻看了一些源码，发现其中存在点设计技巧，于是结合最近看的设">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-1.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-2.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-3.jpg">
+<meta property="og:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-4.jpg">
+<meta property="og:updated_time" content="2016-08-21T12:01:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="别人家SDK中的设计模式－－Android Retrofit库源码解读">
+<meta name="twitter:description" content="我们在日常编写代码中免不了会用到各种各样第三方库，网络请求、图片加载、数据库等等。有些lib接入可能方便到几行代码搞定，有些lib可能从demo、文档到测试都是坑（比如lib嵌套lib导致资源冲突、lib中定义的类无法扩展、兼容性差导致大量崩溃等），相信接过第三方库的童鞋不会没有过这样的吐槽。笔者也是在最近修改一个第三方lib的bug过程中翻看了一些源码，发现其中存在点设计技巧，于是结合最近看的设">
+<meta name="twitter:image" content="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://rockerlee.github.io./2016/08/01/android-retrofit/"/>
+
+  <title> 别人家SDK中的设计模式－－Android Retrofit库源码解读 | Rocker's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Rocker's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                别人家SDK中的设计模式－－Android Retrofit库源码解读
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-01T23:43:23+08:00" content="2016-08-01">
+              2016-08-01
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/08/01/android-retrofit/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/01/android-retrofit/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们在日常编写代码中免不了会用到各种各样第三方库，网络请求、图片加载、数据库等等。有些lib接入可能方便到几行代码搞定，有些lib可能从demo、文档到测试都是坑（比如lib嵌套lib导致资源冲突、lib中定义的类无法扩展、兼容性差导致大量崩溃等），相信接过第三方库的童鞋不会没有过这样的吐槽。笔者也是在最近修改一个第三方lib的bug过程中翻看了一些源码，发现其中存在点设计技巧，于是结合最近看的设计模式，来讨论一下在SDK中如何使用，与大家相互交流，也为本人之后SDK的开发工作做点铺垫。<br><a id="more"></a><br>这个第三方lib叫做Retrofit，是个用在Java中支持restful的网络库。Retrofit是在基于OkHttp3的基础上，用动态代理和annotation实现了restful标准的规范，令开发者使用起来异常方便。Retrofit当然也实现了网络请求的异步处理，并且用工厂模式给开发者预留了很大的扩展空间，可以与ReactiveX结合，也可以由开发者定义自己的同步或异步请求、回调方式。</p>
+<p>为了方便讲解设计模式的实现，我们先来看看代码中如何使用Retrofit。引用官方文档的介绍，只需要这样声明好你的api接口：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">public interface GitHubService &#123;</div><div class="line">  @GET(&quot;users/&#123;user&#125;/repos&quot;)</div><div class="line">  Call&lt;List&lt;Repo&gt;&gt; listRepos(@Path(&quot;user&quot;) String user);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在初始化时传入这个接口的class：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Retrofit retrofit = new Retrofit.Builder()</div><div class="line">    .baseUrl(&quot;https://api.github.com/&quot;)</div><div class="line">    .build();</div><div class="line"></div><div class="line">GitHubService service = retrofit.create(GitHubService.class);</div></pre></td></tr></table></figure></p>
+<p>调用接口时只需两行代码即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Call&lt;List&lt;Repo&gt;&gt; repos = service.listRepos(&quot;octocat”);//获取网络请求实例</div><div class="line">repos.excute();//执行请求，异步请求用repos.enqueue(callback);</div></pre></td></tr></table></figure></p>
+<p>其中List<repo>是对请求返回数据的定义，repos是执行请求的实例（实现了Call接口，后面会详细介绍）。</repo></p>
+<p>从以上代码可以看到，我们做的仅仅是声明了一个接口，涵盖所需的api接口，Retrofit就自动帮我们创建了一个实现这个api接口的实例，我们只需坐享其成调用实例的方法即可完成网络请求。Retrofit的这种“智能”是如何实现的呢？那就是接下来要谈的动态代理模式。</p>
+<h1 id="Retrofit中的代理模式"><a href="#Retrofit中的代理模式" class="headerlink" title="Retrofit中的代理模式"></a>Retrofit中的代理模式</h1><p>为什么需要代理呢？代理其实就是我们想做一件事的时候不亲自动手，也就是“创建网络请求实例”这件事，交给一个代理去创建，这样不管它内部怎样实现，只要能帮我们创建出一个可用的实例就可以了，通常这个实例也是实现了某个接口的（比如文中的Call接口），所以即使底层的实现改变，或者创建过程改变，使用者的代码是不需要调整的。就像我们在携程、去哪儿上买机票，我们也不关心他们到底是从航空公司官方买票，还是从中间商手中买票，只要最终我们能拿到票就行了（所以也会买到用里程数换来的机票，噗…）。</p>
+<p>言归正传，Retrofit用到的动态代理，类图如下：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-1.jpg" alt=""><br>篮框中的就是代理部分，代理了用户定义接口（即开头实例中的GitHubService）中的所有函数，返回一个Call对象，代理实例通过这句代码来产生：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">GitHubService service = retrofit.create(GitHubService.class);</div></pre></td></tr></table></figure></p>
+<p>进去看create函数源码会发现这里是通过反射实现的，直接返回了java.lang.reflect.Proxy中的方法newProxyInstance：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public &lt;T&gt; T create(final Class&lt;T&gt; service) &#123;</div><div class="line">    ...</div><div class="line">    return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class&lt;?&gt;[] &#123; service &#125;,</div><div class="line">        new InvocationHandler() &#123;</div><div class="line"></div><div class="line">          @Override public Object invoke(Object proxy, Method method, Object... args)</div><div class="line">              throws Throwable &#123;</div><div class="line">            //这里有判断method是否为Object类声明的方法</div><div class="line">            ...</div><div class="line">            ServiceMethod serviceMethod = loadServiceMethod(method);</div><div class="line">            OkHttpCall okHttpCall = new OkHttpCall&lt;&gt;(serviceMethod, args);</div><div class="line">            return serviceMethod.callAdapter.adapt(okHttpCall);</div><div class="line">          &#125;</div><div class="line">        &#125;);</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>这个代理实例可以将接口（也就是我们定义的GitHubService）指定的所有方法都指派到invocationHandler中去，当调用service的接口方法时，就会执行InvocationHandler中的Invoke方法，可以看到Retrofit就是在这里创建一个网络请求实例OkHttpCall，将其返回（其实返回的是callAdapter.adapt(okHttpCall)，将okHttpCall适配转换过的对象，详见后面适配器模式），我们就可以利用此实例进行网络请求了。这里invoke方法三个参数中proxy就是代理对象，method表示要调用的方法，args是对method方法传入的参数。</p>
+<h1 id="Retrofit中的适配器模式"><a href="#Retrofit中的适配器模式" class="headerlink" title="Retrofit中的适配器模式"></a>Retrofit中的适配器模式</h1><p>适配器模式是将一个类的接口，转换成客户期望的另一个接口，让原本接口不兼容的类可以合作无间。比如生活中的电源适配器，将220v电压转换成电子设备需要的输入电压，比如Android中的ListView，Adapter将各种各样的数据转换后传给ListView用来显示。Retrofit中的Adapter是用来转换网络请求Call接口的，而这里的Adapter可以由使用者自定义，从而转换成使用者希望的类，具有很强的扩展性，见类图：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-2.jpg" alt=""><br>图中绿色部分就是适配器模式。这个适配器是怎样运作的呢？</p>
+<p>在刚才的代理模式中Retrofit已经帮我们智能创建了网络请求实例Call，Call是对网络请求定义的接口。Retrofit实际默认new的对象是OkHttpCall（一个封装了okhttp3.Call的类），我们并不在意它具体是什么类，能按照Call接口的定义来使用就够了。但用起来才发现我们会有很多额外需求，比如OkHttpCall的回调函数是在工作线程调用的，而网络回调函数我们通常要更新UI，再用handler转到主线程？对使用者来说太麻烦了。于是适配器华丽登场，CallAdapter可以将默认生成的OkHttpCall转换成你想要的任何类型。</p>
+<p>比如Retrofit默认提供的Adapter，就是这样将OkHttpCall适配成ExecutorCallbackCall：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">new CallAdapter&lt;Call&lt;?&gt;&gt;() &#123;</div><div class="line">  ...</div><div class="line">  @Override public &lt;R&gt; Call&lt;R&gt; adapt(Call&lt;R&gt; call) &#123;</div><div class="line">    return new ExecutorCallbackCall&lt;&gt;(callbackExecutor, call);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">static final class ExecutorCallbackCall&lt;T&gt; implements Call&lt;T&gt; &#123;</div><div class="line">  ...</div><div class="line">  @Override public void enqueue(final Callback&lt;T&gt; callback) &#123;</div><div class="line">    delegate.enqueue(new Callback&lt;T&gt;() &#123;</div><div class="line">      @Override public void onResponse(Call&lt;T&gt; call, final Response&lt;T&gt; response) &#123;</div><div class="line">        callbackExecutor.execute(new Runnable() &#123;</div><div class="line">          ...</div><div class="line">        &#125;);</div><div class="line">      &#125;</div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到ExecutorCallbackCall在enqueue方法中，添加了一层回调，用自定义线程（通常就是主线程）执行器执行外部callback，而在CallAdapter.adapt函数直接返回ExecutorCallbackCall的新实例就可以了，也就是动态代理中提到的这句：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return serviceMethod.callAdapter.adapt(okHttpCall);</div></pre></td></tr></table></figure></p>
+<p>这样在适配器的帮助下既可以增强扩展添加新功能，又不会增加使用者代码量。比如你希望在网络回调时统一处理一些错误码，或者希望与RxJava结合使用，又或者希望单独处理cancel函数等等。这些都可以通过适配器来将Retrofit返回的Call适配成你想要的类。</p>
+<p>然而还存在个问题，适配器的adapt方法是在Retrofit内部调用的，它怎么知道使用者要用哪个或哪几个适配器呢？使用者如何设置自己的适配器呢？这就引出了下面要介绍的工厂模式。</p>
+<h1 id="Retrofit中的工厂模式"><a href="#Retrofit中的工厂模式" class="headerlink" title="Retrofit中的工厂模式"></a>Retrofit中的工厂模式</h1><p>工厂模式分为简单工厂模式、工厂方法模式和抽象工厂模式。应用场景大部分是需要根据不同类型来生成不同对象时使用。刚接触工厂模式时，以为这三种模式一个比一个高级，是层层递进的关系。然而并不是，简单工厂模式的确是最简单的一种，但工厂方法模式和抽象工厂模式应该属于平级，只是为了解决不同维度的问题而存在。</p>
+<p>简单工厂模式就是依据变化封装的原则，将生产对象的部分封装在工厂内部，根据不同需求返回不同类型实例，结构简单但扩展起来麻烦，需要对工厂类进行修改。因此生产的类型一旦变多，就需要工厂方法模式了，将工厂定义成一个接口（或抽象类），每新增一类产品就新增一个工厂实例即可，完全符合开放关闭原则，满足大多数情况的需求。而抽象工厂模式适用于多个产品树的情况，比如原本工厂方法模式可以生产轿车、越野车和跑车，但这时候新增了一个产品树：电动轿车、电动越野车和电动跑车，就需要用到抽象工厂模式了，但这种模式对新增产品族，比如新增了商务车，修改起来较复杂。</p>
+<p>上面谈了适配器adapter的作用，而适配器的产生就是由工厂模式来完成的，见类图：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-3.jpg" alt=""><br>图中红框就是工厂方法模式，CallAdapter的生产由CallAdapter.Factory这个接口定义，包含了一个get函数，会返回一个CallAdapter，至于是个什么样的CallAdapter则由子类来实现。比如上面讲适配器时提到的将OkHttpCall转换成ExecutorCallbackCall的适配器，就是由这个ExecutorCallAdapterFacotry生产的。工厂方法模式重点就在于将方法抽象为接口或父类，利用继承关系和子类的差异化创建不同的Adapter，从而将默认生成的OkHttpCall转换成你所需要的各种类型。</p>
+<p>谈了这么多还是感觉不到这些设计模式的作用吗？没关系，来看下我们拓展后的类图：<br><img src="http://oaszc1lkj.bkt.clouddn.com/blog-20160801-retrofit-4.jpg" alt=""><br>图中灰色的就是默认的和扩展的工厂模块。除了Retrofit默认提供的ExecutorCallAdapterFactory和ExecutorCallbackCall，我们可以扩展出自己的Call和Factory，比如图中的GACall和GACallAdapterFacotry，我这里扩展的GACall修改了cancel()的行为，调用cancel()之后就会切除callback在IO线程中的引用，不再收到回调，从而方便处理页面销毁后网络请求才收到返回的情形。当然你还能扩展出其他Factory、Call和Callback（比如RxJava对Retrofit专门实现了一个Factory，直接拿来用就行了），只要记得将你的Factory添加到Retrofit类的adapterFactories列表中就行。</p>
+<p>但用户添加了这么多工厂，真正生产网络请求实例时，要用哪个工厂呢？仔细看工厂接口的get方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">public abstract CallAdapter&lt;?&gt; get(Type returnType, Annotation[] annotations, Retrofit retrofit);</div></pre></td></tr></table></figure></p>
+<p>第一个参数是returnType，也就是网络请求返回的数据类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public interface GitHubService &#123;</div><div class="line">  @GET(&quot;users/&#123;user&#125;/repos&quot;)</div><div class="line"></div><div class="line">  Call&lt;List&lt;Repo&gt;&gt; listRepos(@Path(&quot;user&quot;) String user);</div><div class="line"></div><div class="line">  @GET(&quot;users/&#123;user&#125;/repos&quot;)</div><div class="line">  GACall&lt;List&lt;Repo&gt;&gt; listRepos2(@Path(&quot;user&quot;) String user);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面请求声明的返回类型分别是Call和GACall，工厂会根据传入的returnType来分辨是否属于自己的生产范围，于是returnType为Call就会由Retrofit默认的工厂生产Adapter，returnType为用户自定义的类型（如GACall），则由用户定义的工厂（如GACallAdapterFacotry）生产Adapter。</p>
+<p>以上就是本人在修改内存泄露导致崩溃的bug时，碰巧看到Retrofit源码比较有趣，分析了一遍拿来和大家分享。大体思路就是先用反射代理帮用户生产请求实例，再由适配器转换成用户期望的类型，而这个适配器是通过工厂方法模式让用户无限扩展和自定义的。其实深究下去里面还有很多设计模式的体现，这次就先挑这三种具有代表性的好了。只要我们留意身边的源代码，就会发现别人巧妙的设计无处不在。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/01/android-gp-decompile-2/" rel="next" title="如何破解添加代码混淆的GooglePlay游戏正版验证">
+                <i class="fa fa-chevron-left"></i> 如何破解添加代码混淆的GooglePlay游戏正版验证
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/04/design-photo2comic/" rel="prev" title="PS照片转手绘插画（带人物篇）">
+                PS照片转手绘插画（带人物篇） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/01/android-retrofit/"
+           data-title="别人家SDK中的设计模式－－Android Retrofit库源码解读" data-url="http://rockerlee.github.io./2016/08/01/android-retrofit/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="RockerLee" />
+          <p class="site-author-name" itemprop="name">RockerLee</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Retrofit中的代理模式"><span class="nav-number">1.</span> <span class="nav-text">Retrofit中的代理模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Retrofit中的适配器模式"><span class="nav-number">2.</span> <span class="nav-text">Retrofit中的适配器模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Retrofit中的工厂模式"><span class="nav-number">3.</span> <span class="nav-text">Retrofit中的工厂模式</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">RockerLee</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"rockerblog"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
